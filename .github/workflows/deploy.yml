@@ -33,16 +33,14 @@ jobs:
           node-version: 18
           cache: "pnpm"
 
-      - name: "Set today environment variable"
-        run: echo "today=$(date --rfc-3339=date)" >> "$GITHUB_ENV"
-
+      # TODO is `--compatibility-date` required calling wrangler?
       - name: "Deploy to Cloudflare Pages - ${{ inputs.environment }}"
-        run: pnpm dlx wrangler deploy --no-bundle --env ${{ inputs.environment }} --compatibility-date ${{ env.today }} --name {{PACKAGE-NAME}} --assets dist/ --latest
+        run: pnpm dlx wrangler deploy --no-bundle --env "${{ inputs.environment }}" --name "{{PACKAGE-NAME}}" --assets "dist/" --latest
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      # Will also work ????
+      # Will also work ???? How can I pass environement???
     #   - name: Publish to Cloudflare Pages
     #     uses: cloudflare/pages-action@v1
     #     with:

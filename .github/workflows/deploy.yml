@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Download build artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: dist
+
+      - name: "Setup pnpm"
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: "Set today environment variable"
+        run: echo "today=$(date --rfc-3339=date)" >> "$GITHUB_ENV"
+
+      - name: "Deploy to Cloudflare Pages - ${{ inputs.environment }}"
+        run: pnpm dlx wrangler deploy --no-bundle --env ${{ inputs.environment }} --compatibility-date ${{ env.today }} --name {{PACKAGE-NAME}} --assets dist/ --latest
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Will also work ????
+    #   - name: Publish to Cloudflare Pages
+    #     uses: cloudflare/pages-action@v1
+    #     with:
+    #       apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    #       accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    #       projectName: "{{PACKAGE-NAME}}"
+    #       directory: dist
+    #       # Enable Wrangler v3
+    #       wranglerVersion: '3'

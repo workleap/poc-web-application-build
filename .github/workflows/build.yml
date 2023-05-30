@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Setup pnpm"
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: "Install dependencies"
+        run: pnpm install --frozen-lockfile
+
+      - name: "Lint project"
+        run: pnpm lint
+
+      - name: "Build project"
+        run: pnpm build
+
+      - name: "Test"
+        run: pnpm test
+
+      - name: "Upload Artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist
+
+    #   - name: "Deploy to PR environment"
+    #     if: ${{ success() && github.ref != 'refs/heads/main' }}
+    #     uses: ./.github/workflows/deploy.yml
+    #     with:
+    #       environment: "pr"
+
+    #   - name: "Deploy to Staging environment"
+    #     if: ${{ success() && github.ref == 'refs/heads/main' }}
+    #     uses: ./.github/workflows/deploy.yml
+    #     with:
+    #       environment: "stg"
+
+    #   - name: "Deploy to Production environment"
+    #     if: ${{ success() && github.ref == 'refs/heads/main' }}
+    #     uses: ./.github/workflows/deploy.yml
+    #     with:
+    #       environment: "prod"
+
+    #   - name: "Deploy to Sandbox environment"
+    #     if: ${{ success() && github.ref == 'refs/heads/main' }}
+    #     uses: ./.github/workflows/deploy.yml
+    #     with:
+    #       environment: "sbox"

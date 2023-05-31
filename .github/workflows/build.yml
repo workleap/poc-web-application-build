@@ -34,19 +34,27 @@ jobs:
       - name: "Install dependencies"
         run: pnpm install --frozen-lockfile
 
-      - name: "Lint project"
+      - name: "Lint"
         run: pnpm lint
 
-      - name: "Build project"
+      - name: "Build"
         run: pnpm build
 
       - name: "Test"
         run: pnpm test
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: JEST Tests
+          path: reports/jest-*.xml
+          reporter: jest-junit
+
       - name: "Upload Artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: dist
           path: dist
 
     #   - name: "Deploy to PR environment"

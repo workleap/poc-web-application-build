@@ -19,7 +19,7 @@ jobs:
       - name: "Download build artifacts"
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: dist
           path: dist
 
       - name: "Setup pnpm"

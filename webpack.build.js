@@ -1,9 +1,9 @@
-import path from "node:path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import path from "node:path";
 import TerserPlugin from "terser-webpack-plugin";
 
-import swcConfig from "./swc.build.js";
 import { loadSwcConfig } from "./loadSwcConfig.js";
+import swcConfig from "./swc.build.js";
 
 /** @type {import("webpack").Configuration} */
 export default {
@@ -13,7 +13,7 @@ export default {
     output: {
         path: path.resolve("dist"),
         // The trailing / is very important, otherwise paths will not be resolved correctly.
-        publicPath: "http://localhost:8080/",
+        // publicPath: "http://localhost:8080/",
         clean: true
     },
     module: {

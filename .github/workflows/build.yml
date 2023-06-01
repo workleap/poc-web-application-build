@@ -63,11 +63,11 @@ jobs:
     #     with:
     #       environment: "pr"
 
-    #   - name: "Deploy to Staging environment"
-    #     if: ${{ success() && github.ref == 'refs/heads/main' }}
-    #     uses: ./.github/workflows/deploy.yml
-    #     with:
-    #       environment: "stg"
+      - name: "Deploy to Staging environment"
+        if: ${{ success() && github.ref == 'refs/heads/main' }}
+        uses: ./.github/workflows/deploy.yml
+        with:
+          environment: "stg"
 
     #   - name: "Deploy to Production environment"
     #     if: ${{ success() && github.ref == 'refs/heads/main' }}

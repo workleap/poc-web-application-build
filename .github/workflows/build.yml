@@ -57,17 +57,26 @@ jobs:
           name: dist
           path: dist
 
+      - name: 'Publish to Cloudflare Pages'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'poc-web-application'
+          directory: 'dist'
+          wranglerVersion: '3'
+
     #   - name: "Deploy to PR environment"
     #     if: ${{ success() && github.ref != 'refs/heads/main' }}
     #     uses: ./.github/workflows/deploy.yml
     #     with:
     #       environment: "pr"
 
-      - name: "Deploy to Staging environment"
-        if: ${{ success() && github.ref == 'refs/heads/main' }}
-        uses: ./.github/workflows/deploy.yml
-        with:
-          environment: "stg"
+    #   - name: "Deploy to Staging environment"
+    #     if: ${{ success() && github.ref == 'refs/heads/main' }}
+    #     uses: ./.github/workflows/deploy.yml
+    #     with:
+    #       environment: "stg"
 
     #   - name: "Deploy to Production environment"
     #     if: ${{ success() && github.ref == 'refs/heads/main' }}

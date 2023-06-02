@@ -93,12 +93,14 @@ jobs:
         if: always()
         with:
           message-success: |
-            Build successful ✔
-            Website preview for branch `${{ steps.extract_branch.outputs.branch }}` is available at [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }})
+            # ✔ Build successful
+            Website preview for branch `${{ steps.extract_branch.outputs.branch }}` is available at [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}).
+            [🛠 Last build result](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [💻 Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
           message-failure: |
-            Build failed ❌
+            # ❌ Build failed
           message-cancelled: |
-            Build cancelled ⚠
+            # ⚠ Build cancelled
 
   deployProduction:
     needs: build

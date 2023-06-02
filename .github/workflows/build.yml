@@ -70,6 +70,11 @@ jobs:
           name: 'dist'
           path: 'dist'
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: 'Publish to Cloudflare Pages'
         uses: cloudflare/pages-action@v1
         with:
@@ -78,6 +83,7 @@ jobs:
           projectName: 'poc-web-application'
           directory: 'dist'
           wranglerVersion: '3'
+          branch: ${{ steps.extract_branch.outputs.branch }}
 
   deployProduction:
     needs: build

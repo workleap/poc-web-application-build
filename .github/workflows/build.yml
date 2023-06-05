@@ -15,60 +15,104 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build
+    name: 'Build'
 
     steps:
-      - name: "Checkout"
+      - name: 'Checkout'
         uses: actions/checkout@v3
 
-      - name: "Setup pnpm"
+      - name: 'Setup pnpm'
         uses: pnpm/action-setup@v2
         with:
           version: 8
 
-      - name: "Setup Node.js"
+      - name: 'Setup Node.js'
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: "pnpm"
+          cache: 'pnpm'
 
-      - name: "Install dependencies"
+      - name: 'Install dependencies'
         run: pnpm install --frozen-lockfile
 
-      - name: "Lint"
+      - name: 'Lint'
         run: pnpm lint
 
-      - name: "Build"
+      - name: 'Build'
         run: pnpm build
 
-      - name: "Test"
+      - name: 'Test'
         run: pnpm test-ci
 
-      - name: Test Report
+      - name: 'Test Report'
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: JEST Tests
-          path: reports/jest-*.xml
-          reporter: jest-junit
+          name: 'JEST Tests'
+          path: 'reports/jest-*.xml'
+          reporter: 'jest-junit'
 
-      - name: "Upload Artifacts"
+      - name: 'Upload Artifacts'
         uses: actions/upload-artifact@v3
         with:
-          name: dist
-          path: dist
+          name: 'dist'
+          path: 'dist'
 
   deployPreview:
     needs: build
     if: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: Deploy Preview
+    name: 'Deploy Preview'
+    permissions:
+      pull-requests: write
     steps:
       - name: 'Download build artifacts'
         uses: actions/download-artifact@v3
         with:
-          name: dist
-          path: dist
+          name: 'dist'
+          path: 'dist'
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: 'Publish to Cloudflare Pages'
+        uses: cloudflare/pages-action@v1
+        id: cloudflare
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'poc-web-application'
+          directory: 'dist'
+          wranglerVersion: '3'
+          branch: ${{ steps.extract_branch.outputs.branch }}
+
+      - name: 'Add PR Comment'
+        uses: mshick/add-pr-comment@v2
+        if: always()
+        with:
+          message-success: |
+            # ✔ Build successful
+            Website preview for branch `${{ steps.extract_branch.outputs.branch }}` is available at [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}).
+            [🛠 Last build result](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [💻 Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          message-failure: |
+            # ❌ Build failed
+          message-cancelled: |
+            # ⚠ Build cancelled
+
+  deployProduction:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    name: 'Deploy Production'
+    steps:
+      - name: 'Download build artifacts'
+        uses: actions/download-artifact@v3
+        with:
+          name: 'dist'
+          path: 'dist'
 
       - name: 'Publish to Cloudflare Pages'
         uses: cloudflare/pages-action@v1
@@ -78,24 +122,3 @@ jobs:
           projectName: 'poc-web-application'
           directory: 'dist'
           wranglerVersion: '3'
-
-  deployProduction:
-    needs: build
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    name: Deploy Production
-    steps:
-        - name: 'Download build artifacts'
-          uses: actions/download-artifact@v3
-          with:
-            name: dist
-            path: dist
-
-        - name: 'Publish to Cloudflare Pages'
-          uses: cloudflare/pages-action@v1
-          with:
-            apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-            accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-            projectName: 'poc-web-application'
-            directory: 'dist'
-            wranglerVersion: '3'

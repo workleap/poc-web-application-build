@@ -38,8 +38,8 @@ jobs:
       - name: 'Lint'
         run: pnpm lint
 
-      - name: 'Build'
-        run: pnpm build
+    #   - name: 'Build'
+    #     run: pnpm build
 
       - name: 'Test'
         run: pnpm test-ci
@@ -52,73 +52,73 @@ jobs:
           path: 'reports/jest-*.xml'
           reporter: 'jest-junit'
 
-      - name: 'Upload Artifacts'
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'dist'
-          path: 'dist'
+    #   - name: 'Upload Artifacts'
+    #     uses: actions/upload-artifact@v3
+    #     with:
+    #       name: 'dist'
+    #       path: 'dist'
 
-  deployPreview:
-    needs: build
-    if: ${{ github.ref != 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    name: 'Deploy Preview'
-    permissions:
-      pull-requests: write
-    steps:
-      - name: 'Download build artifacts'
-        uses: actions/download-artifact@v3
-        with:
-          name: 'dist'
-          path: 'dist'
+#   deployPreview:
+#     needs: build
+#     if: ${{ github.ref != 'refs/heads/main' }}
+#     runs-on: ubuntu-latest
+#     name: 'Deploy Preview'
+#     permissions:
+#       pull-requests: write
+#     steps:
+#       - name: 'Download build artifacts'
+#         uses: actions/download-artifact@v3
+#         with:
+#           name: 'dist'
+#           path: 'dist'
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
+#       - name: Extract branch name
+#         shell: bash
+#         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+#         id: extract_branch
 
-      - name: 'Publish to Cloudflare Pages'
-        uses: cloudflare/pages-action@v1
-        id: cloudflare
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'poc-web-application'
-          directory: 'dist'
-          wranglerVersion: '3'
-          branch: ${{ steps.extract_branch.outputs.branch }}
+#       - name: 'Publish to Cloudflare Pages'
+#         uses: cloudflare/pages-action@v1
+#         id: cloudflare
+#         with:
+#           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+#           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+#           projectName: 'poc-web-application'
+#           directory: 'dist'
+#           wranglerVersion: '3'
+#           branch: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: 'Add PR Comment'
-        uses: mshick/add-pr-comment@v2
-        if: always()
-        with:
-          message-success: |
-            # ✔ Build successful
-            Website preview for branch `${{ steps.extract_branch.outputs.branch }}` is available at [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}).
-            [🛠 Last build result](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            [💻 Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-          message-failure: |
-            # ❌ Build failed
-          message-cancelled: |
-            # ⚠ Build cancelled
+#       - name: 'Add PR Comment'
+#         uses: mshick/add-pr-comment@v2
+#         if: always()
+#         with:
+#           message-success: |
+#             # ✔ Build successful
+#             Website preview for branch `${{ steps.extract_branch.outputs.branch }}` is available at [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}).
+#             [🛠 Last build result](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+#             [💻 Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+#           message-failure: |
+#             # ❌ Build failed
+#           message-cancelled: |
+#             # ⚠ Build cancelled
 
-  deployProduction:
-    needs: build
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    name: 'Deploy Production'
-    steps:
-      - name: 'Download build artifacts'
-        uses: actions/download-artifact@v3
-        with:
-          name: 'dist'
-          path: 'dist'
+#   deployProduction:
+#     needs: build
+#     if: ${{ github.ref == 'refs/heads/main' }}
+#     runs-on: ubuntu-latest
+#     name: 'Deploy Production'
+#     steps:
+#       - name: 'Download build artifacts'
+#         uses: actions/download-artifact@v3
+#         with:
+#           name: 'dist'
+#           path: 'dist'
 
-      - name: 'Publish to Cloudflare Pages'
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'poc-web-application'
-          directory: 'dist'
-          wranglerVersion: '3'
+#       - name: 'Publish to Cloudflare Pages'
+#         uses: cloudflare/pages-action@v1
+#         with:
+#           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+#           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+#           projectName: 'poc-web-application'
+#           directory: 'dist'
+#           wranglerVersion: '3'

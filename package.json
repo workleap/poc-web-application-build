@@ -82,5 +82,6 @@
         "suiteNameTemplate": "{filepath}",
         "classNameTemplate": "{classname}",
         "titleTemplate": "{title}"
-    }
+    },
+    "packageManager": "pnpm@8.6.2"
 }

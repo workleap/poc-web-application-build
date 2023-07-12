@@ -2,9 +2,9 @@ import "./index.css";
 
 import { StrictMode, Suspense } from "react";
 
+import { createRoot } from "react-dom/client";
 import { App } from "./App.tsx";
 import { Loading } from "./Loading.tsx";
-import { createRoot } from "react-dom/client";
 
 // Mock Service Worker
 if (process.env.NODE_ENV === "development") {
